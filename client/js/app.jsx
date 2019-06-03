@@ -472,7 +472,7 @@ class Portfolio extends React.Component {
 
         var element = document.createElement('a');
         element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-        element.setAttribute('download', "portfolio.json");
+        element.setAttribute('download', "portfolio.csv");
 
         element.style.display = 'none';
         document.body.appendChild(element);
