@@ -1,0 +1,105 @@
+* {
+    padding : 0;
+    margin : 0;
+}
+
+html,body {
+    height : 100%;
+    background : #eee;
+}
+
+body {
+    font-family: monospace;
+    font-size : 1.4em;
+    font-weight : 400;
+    line-height : 1.6em;
+}
+
+h1 {
+    font-size: 2.0em;
+    line-height : 2.2em;
+}
+
+h2 {
+    font-size: 1.2em;
+    line-height : 1.4em;
+}
+
+a {
+    font-style : inherit;
+    text-decoration : inherit;
+    color : inherit;
+}
+
+#app {
+    position: relative;
+
+    margin : 1em auto;
+    width : 30em;
+}
+
+[type="file"] {
+    border: 0;
+    clip: rect(0, 0, 0, 0);
+    height: 1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute !important;
+    white-space: nowrap;
+    width: 1px;
+}
+
+[type="file"] + label {
+    background-color: inherit;
+    color: inherit;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.right {
+    display: inline;
+    position: absolute;
+    right: 0;
+    font-weight: bold;
+    text-decoration: none;
+    color: #aaa;
+}
+
+.order {
+    padding: 1em;
+    margin: 1em 0;
+    background: white;
+    border : 0.2em solid #ddd;
+}
+
+.order .line {
+    padding: 0.5em 0;
+}
+
+.order input {
+    background: inherit;
+    font: inherit;
+    font-style : inherit;
+    text-decoration : none;
+    color : black;
+    border: none;
+    border-bottom: 0.1em dashed black;
+    border-radius: 0;
+}
+
+.order input:focus {
+    outline: none;
+    color: #666;
+}
+
+.order .right {
+    right: 1em;
+}
+
+/* Smartphone */
+@media (max-width : 480px) {
+    #app {
+        width : auto;
+        padding : 1em;
+    }
+}

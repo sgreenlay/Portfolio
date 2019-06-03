@@ -1,0 +1,32 @@
+{
+  "name": "ToDo",
+  "version": "0.0.0",
+  "description": "",
+  "scripts": {
+    "server": "node server/index.js",
+    "client": "webpack-dev-server --mode development --host 0.0.0.0 --port 8000",
+    "build": "webpack --mode production"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.4.3",
+    "@babel/preset-env": "^7.4.3",
+    "@babel/preset-react": "^7.0.0",
+    "apollo-boost": "^0.4.0",
+    "apollo-server": "^2.5.0",
+    "babel-loader": "^8.0.5",
+    "css-loader": "^2.1.1",
+    "graphql": "^14.3.1",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "react": "^16.8.6",
+    "react-apollo": "^2.5.6",
+    "react-dom": "^16.8.6",
+    "style-loader": "^0.23.1",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "^3.3.1"
+  }
+}
