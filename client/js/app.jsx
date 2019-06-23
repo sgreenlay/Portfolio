@@ -198,6 +198,7 @@ class InteractiveField extends StaticField {
 }
 
 const Field = {
+    DATE : 'date',
     TICKER : 'ticker',
     QUANTITY : 'quantity',
     PRICE : 'price'
@@ -294,10 +295,23 @@ class Order extends React.Component {
     constructor(props) {
         super(props);
 
+        this.handleChange = this.handleChange.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
         this.handleCreateBuy = this.handleCreateBuy.bind(this);
         this.handleDeleteBuy = this.handleDeleteBuy.bind(this);
         this.handleBuyChange = this.handleBuyChange.bind(this);
+    }
+
+    handleChange(field, value) {
+        if (field == Field.DATE)
+        {
+            if (this.props.onChange)
+            {
+                this.props.onChange({
+                    date: new Date(Date.parse(value))
+                });
+            }
+        }
     }
 
     handleDelete() {
@@ -329,7 +343,8 @@ class Order extends React.Component {
     }
 
     render() {
-        const order = this.props.order;
+        const { handleChange } = this;
+        const { order } = this.props;
 
         const order_rows = [];
         var order_total = 0;
@@ -355,9 +370,14 @@ class Order extends React.Component {
                     e.preventDefault();
                 }}>[x]</a>
                 <h2 key={"order_" + order.id + "title"}>
-                    <StaticField key={"order_" + order.id + "title_value"}
+                    <InteractiveField key={"order_" + order.id + "title_value"}
                                  value={order.date}
-                                 fieldType={FieldType.DATE} /> <a href="#" onClick={e => {
+                                 fieldType={FieldType.DATE}
+                                 onChange={value => {
+                                     handleChange(Field.DATE, value);
+                                 }} onBlur={value => {
+                                     handleChange(Field.DATE, value);
+                                 }} /> <a href="#" onClick={e => {
                         this.handleCreateBuy();
                         e.preventDefault();
                     }}>[+]</a>
@@ -385,6 +405,7 @@ class Portfolio extends React.Component {
         this.handleFileLoad = this.handleFileLoad.bind(this);
         this.handleCreateOrder = this.handleCreateOrder.bind(this);
         this.handleDeleteOrder = this.handleDeleteOrder.bind(this);
+        this.handleChangeOrder = this.handleChangeOrder.bind(this);
         this.handleCreateBuy = this.handleCreateBuy.bind(this);
         this.handleDeleteBuy = this.handleDeleteBuy.bind(this);
         this.handleChangeBuy = this.handleChangeBuy.bind(this);
@@ -550,6 +571,20 @@ class Portfolio extends React.Component {
         });
     }
 
+    handleChangeOrder(order_id, state) {
+        var updated_orders = this.state.orders;
+        var order = updated_orders.find(order => {
+            return order.id == order_id;
+        });
+        if (order)
+        {
+            order.date = (state.date != null) ? state.date : order.date;
+        }
+        this.setState({
+            orders: updated_orders
+        });
+    }
+
     handleChangeBuy(order_id, buy_id, state) {
         var updated_orders = this.state.orders;
         var order = updated_orders.find(order => {
@@ -584,6 +619,7 @@ class Portfolio extends React.Component {
                 <Order order={order}
                        key={"order_" + order.id}
                        onDelete={() => this.handleDeleteOrder(order.id)}
+                       onChange={(update) => this.handleChangeOrder(order.id, update)}
                        onCreateBuy={this.handleCreateBuy}
                        onDeleteBuy={this.handleDeleteBuy}
                        onBuyChange={this.handleChangeBuy}/>
