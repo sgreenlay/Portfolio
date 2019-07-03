@@ -31,6 +31,34 @@ a {
     color : inherit;
 }
 
+select {
+    font: inherit;
+    text-decoration : inherit;
+    color : inherit;
+    border: none;
+    background: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+select:hover {
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+select:focus {
+    border: none;
+    outline: none;
+}
+select option {
+    font: inherit;
+    text-decoration : inherit;
+    color : inherit;
+    border: none;
+    background: inherit;
+}
+
 #app {
     position: relative;
 

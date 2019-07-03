@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+
 import './app.css';
 
 import { parseCSV } from './csv';
@@ -368,7 +369,7 @@ class Order extends React.Component {
                 <a className="right" href="#" onClick={e => {
                     this.handleDelete();
                     e.preventDefault();
-                }}>[x]</a>
+                }}>[delete]</a>
                 <h2 key={"order_" + order.id + "title"}>
                     <InteractiveField key={"order_" + order.id + "title_value"}
                                  value={order.date}
@@ -391,24 +392,181 @@ class Order extends React.Component {
     }
 }
 
-class Portfolio extends React.Component {
+class Orders extends React.Component {
 
     constructor(props) {
         super(props);
 
-        this.state = {
-            orders: props.data.orders,
-            next_order_id : props.data.orders.length
-        };
-
-        this.handleFileSelect = this.handleFileSelect.bind(this);
-        this.handleFileLoad = this.handleFileLoad.bind(this);
         this.handleCreateOrder = this.handleCreateOrder.bind(this);
         this.handleDeleteOrder = this.handleDeleteOrder.bind(this);
         this.handleChangeOrder = this.handleChangeOrder.bind(this);
         this.handleCreateBuy = this.handleCreateBuy.bind(this);
         this.handleDeleteBuy = this.handleDeleteBuy.bind(this);
         this.handleChangeBuy = this.handleChangeBuy.bind(this);
+    }
+
+    handleCreateOrder() {
+        var order = {
+            id : this.props.state.next_order_id,
+            date : new Date(),
+            buys : [
+                {
+                    id: 1,
+                    ticker : "",
+                    quantity: 0,
+                    price: 0
+                }
+            ],
+            next_buy_id : 2
+        }
+        var updated_orders = this.props.state.orders;
+        updated_orders.unshift(order);
+
+        this.props.onOrdersChanged(updated_orders);
+    }
+
+    handleDeleteOrder(order_id) {
+        var updated_orders = this.props.state.orders.filter((order) => {
+            return order.id != order_id
+        });
+
+        this.props.onOrdersChanged(updated_orders);
+    }
+
+    handleCreateBuy(order_id) {
+        var updated_orders = this.props.state.orders;
+        var order = updated_orders.find(order => {
+            return order.id == order_id;
+        });
+        if (order)
+        {
+            order.buys.push({
+                id: order.next_buy_id++,
+                ticker : "",
+                quantity: 0,
+                price: 0
+            });
+        }
+        this.props.onOrdersChanged(updated_orders);
+    }
+
+    handleDeleteBuy(order_id, buy_id) {
+        var updated_orders = this.props.state.orders;
+        var order = updated_orders.find(order => {
+            return order.id == order_id;
+        });
+        if (order)
+        {
+            order.buys = order.buys.filter((buy) => {
+                return buy.id != buy_id
+            });
+        }
+        this.props.onOrdersChanged(updated_orders);
+    }
+
+    handleChangeOrder(order_id, state) {
+        var updated_orders = this.props.state.orders;
+        var order = updated_orders.find(order => {
+            return order.id == order_id;
+        });
+        if (order)
+        {
+            order.date = (state.date != null) ? state.date : order.date;
+        }
+        this.props.onOrdersChanged(updated_orders);
+    }
+
+    handleChangeBuy(order_id, buy_id, state) {
+        var updated_orders = this.props.state.orders;
+        var order = updated_orders.find(order => {
+            return order.id == order_id;
+        });
+        if (order)
+        {
+            var buy = order.buys.find(buy => {
+                return buy.id == buy_id;
+            });
+
+            buy.ticker = (state.ticker != null) ? state.ticker : buy.ticker;
+            buy.quantity = (state.quantity != null) ? state.quantity : buy.quantity;
+            buy.price = (state.price != null) ? state.price : buy.price;
+        }
+        this.props.onOrdersChanged(updated_orders);
+    }
+
+    render() {
+        const portfolio_rows = [];
+
+        var portfolio_total = 0;
+        this.props.state.orders.forEach(order => {
+
+            order.buys.forEach(buy => {
+                portfolio_total += buy.quantity * buy.price;
+            });
+
+            portfolio_rows.push(
+                <Order order={order}
+                       key={"order_" + order.id}
+                       onDelete={() => this.handleDeleteOrder(order.id)}
+                       onChange={(update) => this.handleChangeOrder(order.id, update)}
+                       onCreateBuy={this.handleCreateBuy}
+                       onDeleteBuy={this.handleDeleteBuy}
+                       onBuyChange={this.handleChangeBuy}/>
+            );
+        })
+
+        return (
+            <div>
+                <div className="order">
+                    <span className="right"><a href="#" onClick={e => {
+                        this.handleCreateOrder();
+                        e.preventDefault();
+                    }}>[add]</a></span>
+                    <span className="line"><b>total</b>: <StaticField value={portfolio_total} fieldType={FieldType.CURRENCY} /></span>
+                </div>
+                {portfolio_rows}
+            </div>
+        );
+    }
+}
+
+class Portfolio extends React.Component {
+    render() {
+        return (
+            <div>
+                Hello World!
+            </div>
+        );
+    }
+}
+
+class Application extends React.Component {
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            orders: props.data.orders,
+            next_order_id : props.data.orders.length,
+            current_page: 'orders'
+        };
+
+        this.handleOrdersChanged = this.handleOrdersChanged.bind(this);
+        this.handlePageChange = this.handlePageChange.bind(this);
+        this.handleFileSelect = this.handleFileSelect.bind(this);
+        this.handleFileLoad = this.handleFileLoad.bind(this);
+    }
+
+    handleOrdersChanged(updated_orders) {
+        this.setState({
+            orders: updated_orders
+        });
+    }
+
+    handlePageChange(e) {
+        this.setState({
+            current_page: e.target.value
+        });
     }
 
     handleFileSelect(e) {
@@ -469,7 +627,7 @@ class Portfolio extends React.Component {
 
         this.setState({
             orders: loaded_orders,
-            next_order_id : next_order_id
+            next_order_id: next_order_id
         });
     }
 
@@ -503,129 +661,7 @@ class Portfolio extends React.Component {
         document.body.removeChild(element);
     }
 
-    handleCreateOrder() {
-        var order = {
-            id : this.state.next_order_id,
-            date : new Date(),
-            buys : [
-                {
-                    id: 1,
-                    ticker : "",
-                    quantity: 0,
-                    price: 0
-                }
-            ],
-            next_buy_id : 2
-        }
-        var updated_orders = this.state.orders;
-        updated_orders.unshift(order);
-
-        this.setState({
-            orders: updated_orders,
-            next_order_id : order.id + 1
-        });
-    }
-
-    handleDeleteOrder(order_id) {
-        var updated_orders = this.state.orders.filter((order) => {
-            return order.id != order_id
-        });
-
-        this.setState({
-            orders: updated_orders
-        });
-    }
-
-    handleCreateBuy(order_id) {
-        var updated_orders = this.state.orders;
-        var order = updated_orders.find(order => {
-            return order.id == order_id;
-        });
-        if (order)
-        {
-            order.buys.push({
-                id: order.next_buy_id++,
-                ticker : "",
-                quantity: 0,
-                price: 0
-            });
-        }
-        this.setState({
-            orders: updated_orders
-        });
-    }
-
-    handleDeleteBuy(order_id, buy_id) {
-        var updated_orders = this.state.orders;
-        var order = updated_orders.find(order => {
-            return order.id == order_id;
-        });
-        if (order)
-        {
-            order.buys = order.buys.filter((buy) => {
-                return buy.id != buy_id
-            });
-        }
-        this.setState({
-            orders: updated_orders
-        });
-    }
-
-    handleChangeOrder(order_id, state) {
-        var updated_orders = this.state.orders;
-        var order = updated_orders.find(order => {
-            return order.id == order_id;
-        });
-        if (order)
-        {
-            order.date = (state.date != null) ? state.date : order.date;
-        }
-        this.setState({
-            orders: updated_orders
-        });
-    }
-
-    handleChangeBuy(order_id, buy_id, state) {
-        var updated_orders = this.state.orders;
-        var order = updated_orders.find(order => {
-            return order.id == order_id;
-        });
-        if (order)
-        {
-            var buy = order.buys.find(buy => {
-                return buy.id == buy_id;
-            });
-
-            buy.ticker = (state.ticker != null) ? state.ticker : buy.ticker;
-            buy.quantity = (state.quantity != null) ? state.quantity : buy.quantity;
-            buy.price = (state.price != null) ? state.price : buy.price;
-        }
-        this.setState({
-            orders: updated_orders
-        });
-    }
-
     render() {
-        const portfolio_rows = [];
-
-        var portfolio_total = 0;
-        this.state.orders.forEach(order => {
-
-            order.buys.forEach(buy => {
-                portfolio_total += buy.quantity * buy.price;
-            });
-
-            portfolio_rows.push(
-                <Order order={order}
-                       key={"order_" + order.id}
-                       onDelete={() => this.handleDeleteOrder(order.id)}
-                       onChange={(update) => this.handleChangeOrder(order.id, update)}
-                       onCreateBuy={this.handleCreateBuy}
-                       onDeleteBuy={this.handleDeleteBuy}
-                       onBuyChange={this.handleChangeBuy}/>
-            );
-        })
-
         return (
             <div>
                 <span className="right">
@@ -639,14 +675,18 @@ class Portfolio extends React.Component {
                         e.preventDefault();
                     }}>[save]</a>
                 </span>
-                <h1>Orders <a href="#" onClick={e => {
-                    this.handleCreateOrder();
-                    e.preventDefault();
-                }}>[+]</a></h1>
-                <div className="order">
-                    <span className="line"><b>total</b>: <StaticField value={portfolio_total} fieldType={FieldType.CURRENCY} /></span>
-                </div>
-                {portfolio_rows}
+                <h1>
+                    <select onChange={this.handlePageChange} value={this.state.current_page}>
+                        <option value="orders">[Orders]</option>
+                        <option value="portfolio">[Portfolio]</option>
+                    </select>
+                </h1>
+
+                { /* TODO: replace with a Router */ }
+                {{
+                    orders: <Orders state={this.state} onOrdersChanged={this.handleOrdersChanged} />,
+                    portfolio: <Portfolio state={this.state} />
+                }[this.state.current_page]}
             </div>
         );
     }
@@ -671,6 +711,6 @@ const PLACEHOLDER_DATA = {
 }
 
 ReactDOM.render(
-    <Portfolio data={PLACEHOLDER_DATA} />,
+    <Application data={PLACEHOLDER_DATA} />,
     document.getElementById('app')
 );
