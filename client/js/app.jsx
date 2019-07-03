@@ -9,11 +9,12 @@ const FieldType = {
     TEXT: 'text',
     NUMBER: 'number',
     DATE: 'date',
-    CURRENCY: 'currency'
+    CURRENCY: 'currency',
+    PERCENT : 'percent'
 }
 
 const fieldValue = (value, fieldType, editing) => {
-    if (fieldType == FieldType.CURRENCY)
+    if (fieldType == FieldType.CURRENCY || fieldType == FieldType.PERCENT)
     {
         var floatValue = parseFloat(value.toString().replace(/,/g, ''));
         if (isNaN(floatValue))
@@ -36,7 +37,9 @@ const fieldValue = (value, fieldType, editing) => {
 
 const formattedFieldValue = (value, fieldType, editing) => {
     
-    if (fieldType == FieldType.CURRENCY || fieldType == FieldType.NUMBER)
+    if (fieldType == FieldType.CURRENCY || 
+        fieldType == FieldType.NUMBER || 
+        fieldType == FieldType.PERCENT)
     {
         var { value, success } = fieldValue(value, fieldType, editing);
         if (!success)
@@ -60,6 +63,10 @@ const formattedFieldValue = (value, fieldType, editing) => {
                 return value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             }
             return value.toFixed(0);
+        }
+        if (fieldType == FieldType.PERCENT)
+        {
+            return value.toFixed(1);
         }
     }
     if (fieldType == FieldType.DATE)
@@ -85,19 +92,42 @@ const formattedFieldValue = (value, fieldType, editing) => {
 class StaticField extends React.Component {
     render() {
         const { fieldType } = this.props;
-        const value = formattedFieldValue(this.props.value, this.props.fieldType);
 
         const rows = [];
+        const classes = [];
+
+        const value = formattedFieldValue(this.props.value, this.props.fieldType);
 
         if (fieldType == FieldType.CURRENCY)
         {
             rows.push(<span key="currency_prefix">$</span>);
         }
 
+        if (fieldType == FieldType.PERCENT)
+        {
+            if (value < 0)
+            {
+                classes.push("loss");
+            }
+            else if (value > 0)
+            {
+                classes.push("gain");
+            }
+            else if (value == 0)
+            {
+                classes.push("neutral");
+            }
+        }
+
         rows.push(<span key="field_value">{value}</span>);
 
+        if (fieldType == FieldType.PERCENT)
+        {
+            rows.push(<span key="percent_suffix">%</span>);
+        }
+
         return (
-            <span>{rows}</span>
+            <span className={classes}>{rows}</span>
         );
     }
 }
@@ -282,7 +312,7 @@ class Buy extends React.Component {
                 }} />
                 &nbsp;=&nbsp;
                 <StaticField value={total} fieldType={FieldType.CURRENCY} />
-                <a className="right" href="#" onClick={e => {
+                <a className="right action" href="#" onClick={e => {
                     this.handleDelete();
                     e.preventDefault();
                 }}>[x]</a>
@@ -354,7 +384,7 @@ class Order extends React.Component {
 
         return (
             <div className="order">
-                <a className="right" href="#" onClick={e => {
+                <a className="right action" href="#" onClick={e => {
                     this.handleDelete();
                     e.preventDefault();
                 }}>[delete]</a>
@@ -502,7 +532,7 @@ class Orders extends React.Component {
         return (
             <div>
                 <div className="order">
-                    <span className="right"><a href="#" onClick={e => {
+                    <span className="right action"><a href="#" onClick={e => {
                         this.handleCreateOrder();
                         e.preventDefault();
                     }}>[add]</a></span>
@@ -524,9 +554,74 @@ class Orders extends React.Component {
 
 class Portfolio extends React.Component {
     render() {
+        const { orders } = this.props.state;
+
+        var stocks = {};
+        orders.forEach((order) => {
+            order.buys.forEach((buy) => {
+                var stock_buy = {
+                    date : order.date,
+                    quantity : buy.quantity,
+                    price : buy.price
+                };
+
+                if (buy.ticker in stocks)
+                {
+                    stocks[buy.ticker].buys.push(stock_buy);
+                }
+                else
+                {
+                    stocks[buy.ticker] = {
+                        buys : [ stock_buy ]
+                    };
+                }
+            });
+        });
+
+        Object.keys(stocks).forEach(ticker => {
+            var total_count = 0;
+            stocks[ticker].buys.forEach((buy) => {
+                total_count += buy.quantity;
+            });
+            stocks[ticker].total_count = total_count;
+        });
+
         return (
             <div>
-                Hello World!
+                {Object.keys(stocks).sort().map(ticker => {
+                    const stock = stocks[ticker];
+                    return (
+                        <div key={ticker} className="order">
+                            <h2>
+                                <StaticField value={ticker} />
+                                <span className="right">
+                                    <StaticField value={stock.total_count} />
+                                    &nbsp;⨯&nbsp;
+                                    <StaticField value={0.00} fieldType={FieldType.CURRENCY} />
+                                    &nbsp;=&nbsp; 
+                                    <StaticField value={0.00} fieldType={FieldType.CURRENCY} /> (
+                                    <StaticField value={0.00} fieldType={FieldType.PERCENT} />
+                                    )
+                                </span>
+                            </h2>
+                            {stock.buys.map(buy => {
+                                return (
+                                    <div key={buy.date} className="buy line">
+                                        <StaticField value={buy.quantity} fieldType={FieldType.NUMBER} />
+                                        &nbsp;⨯&nbsp;
+                                        <StaticField value={buy.price} fieldType={FieldType.CURRENCY} />
+                                        &nbsp;🡒&nbsp;
+                                        <StaticField value={0.00} fieldType={FieldType.CURRENCY} /> (
+                                        <StaticField value={0.00} fieldType={FieldType.PERCENT} />
+                                        ) + <StaticField value={0.00} fieldType={FieldType.CURRENCY} /> (
+                                        <StaticField value={0.00} fieldType={FieldType.PERCENT} />
+                                        )
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    )
+                })}
             </div>
         );
     }
@@ -657,7 +752,7 @@ class Application extends React.Component {
     render() {
         return (
             <div>
-                <span className="right">
+                <span className="right action">
                     <input type="file" id="file" onChange={e => {
                         this.handleFileSelect(e);
                         e.preventDefault();

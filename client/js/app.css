@@ -90,6 +90,10 @@ select option {
     right: 0;
     font-weight: bold;
     text-decoration: none;
+    color: inherit;
+}
+
+.action {
     color: #aaa;
 }
 
@@ -122,6 +126,18 @@ select option {
 
 .order .right {
     right: 1em;
+}
+
+.loss {
+    color: red;
+}
+
+.gain {
+    color: green;
+}
+
+.neutral {
+    color: gray;
 }
 
 /* Smartphone */
