@@ -347,21 +347,9 @@ class Order extends React.Component {
         const { handleChange } = this;
         const { order } = this.props;
 
-        const order_rows = [];
         var order_total = 0;
-
         order.buys.forEach((buy) => {
             order_total += buy.quantity * buy.price;
-            order_rows.push(
-                <Buy key={"order_" + order.id + "_buy_" + buy.id} buy={buy}
-                     onChange={update => {
-                         this.handleBuyChange(buy.id, update);
-                     }}
-                     onDelete={() => {
-                         this.handleDeleteBuy(buy.id);
-                     }}
-                />
-            );
         });
 
         return (
@@ -384,7 +372,16 @@ class Order extends React.Component {
                     }}>[+]</a>
                 </h2>
                 <div key={"order_" + order.id + "buys"} className="line">
-                    {order_rows}
+                    {order.buys.map((buy) => {
+                        return <Buy key={"order_" + order.id + "_buy_" + buy.id} buy={buy}
+                            onChange={update => {
+                                this.handleBuyChange(buy.id, update);
+                            }}
+                            onDelete={() => {
+                                this.handleDeleteBuy(buy.id);
+                            }}
+                        />
+                    })}
                 </div>
                 <b key={"order_" + order.id + "total"}>total</b>: <StaticField value={order_total} fieldType={FieldType.CURRENCY} />
             </div>
@@ -422,7 +419,7 @@ class Orders extends React.Component {
         var updated_orders = this.props.state.orders;
         updated_orders.unshift(order);
 
-        this.props.onOrdersChanged(updated_orders);
+        this.props.onOrdersChanged(updated_orders, this.props.state.next_order_id + 1);
     }
 
     handleDeleteOrder(order_id) {
@@ -495,24 +492,11 @@ class Orders extends React.Component {
     }
 
     render() {
-        const portfolio_rows = [];
-
         var portfolio_total = 0;
         this.props.state.orders.forEach(order => {
-
             order.buys.forEach(buy => {
                 portfolio_total += buy.quantity * buy.price;
             });
-
-            portfolio_rows.push(
-                <Order order={order}
-                       key={"order_" + order.id}
-                       onDelete={() => this.handleDeleteOrder(order.id)}
-                       onChange={(update) => this.handleChangeOrder(order.id, update)}
-                       onCreateBuy={this.handleCreateBuy}
-                       onDeleteBuy={this.handleDeleteBuy}
-                       onBuyChange={this.handleChangeBuy}/>
-            );
         })
 
         return (
@@ -524,7 +508,15 @@ class Orders extends React.Component {
                     }}>[add]</a></span>
                     <span className="line"><b>total</b>: <StaticField value={portfolio_total} fieldType={FieldType.CURRENCY} /></span>
                 </div>
-                {portfolio_rows}
+                {this.props.state.orders.map(order => {
+                    return <Order order={order}
+                                key={"order_" + order.id}
+                                onDelete={() => this.handleDeleteOrder(order.id)}
+                                onChange={(update) => this.handleChangeOrder(order.id, update)}
+                                onCreateBuy={this.handleCreateBuy}
+                                onDeleteBuy={this.handleDeleteBuy}
+                                onBuyChange={this.handleChangeBuy}/>
+                })}
             </div>
         );
     }
@@ -557,9 +549,10 @@ class Application extends React.Component {
         this.handleFileLoad = this.handleFileLoad.bind(this);
     }
 
-    handleOrdersChanged(updated_orders) {
+    handleOrdersChanged(updated_orders, updated_next_order_id) {
         this.setState({
-            orders: updated_orders
+            orders: updated_orders,
+            next_order_id: updated_next_order_id ? updated_next_order_id : this.state.next_order_id
         });
     }
 
