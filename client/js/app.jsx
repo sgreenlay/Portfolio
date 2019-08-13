@@ -613,7 +613,7 @@ class Portfolio extends React.Component {
                                         &nbsp;🡒&nbsp;
                                         <StaticField value={0.00} fieldType={FieldType.CURRENCY} /> (
                                         <StaticField value={0.00} fieldType={FieldType.PERCENT} />
-                                        ) + <StaticField value={0.00} fieldType={FieldType.CURRENCY} /> (
+                                        ) + <StaticField value={0.00} fieldType={FieldType.CURRENCY} /> DIV (
                                         <StaticField value={0.00} fieldType={FieldType.PERCENT} />
                                         )
                                     </div>
