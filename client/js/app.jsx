@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 
 import './app.css';
 
-import { parseCSV } from './csv';
+import CSV from 'csv';
 
 const FieldType = {
     TEXT: 'text',
@@ -674,7 +674,7 @@ class Application extends React.Component {
 
     handleFileLoad(e) {
         const text = e.target.result;
-        const data = parseCSV(text);
+        const data = CSV.parse(text);
 
         var loaded_orders = [];
 

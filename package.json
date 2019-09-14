@@ -27,6 +27,7 @@
     "webpack-dev-server": "^3.3.1"
   },
   "dependencies": {
+    "csv": "github:sgreenlay/csv.js#master",
     "sqlite3": "^4.0.9"
   }
 }
